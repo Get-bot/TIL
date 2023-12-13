@@ -35,7 +35,7 @@ int result2 = y++ + 10; => result = 11, y = 2
 
 ## 산술 연산자
 
-![img_2.png](img_2.png)
+<img src="img_2.png" alt="산술 연산자" style="max-width:400px; height:auto"/>
 
 - 피연산자가 정수 타입이면 연산 결과는 int 타입이다.
 - 피연산자가 정수 타입이고 그 중 하나가 long 타입이면 연산의 결과는 long이다
@@ -93,7 +93,9 @@ boolean result = Double.isNan(변수);
 
 - 비교 연산자는 동등 또는 크기 를 평가해서 boolean 타입인 true/fasle를 반환한다.
 - 흐름제어문인 조건문, 반복문에서 실행 흐름을 제어할 때 주로 사용된다.
-![img_1.png](img_1.png)
+
+<img src="img_1.png" alt="비교 연산자" style="max-width:400px; height:auto"/>
+
 - 피연산자의 타입이 다를 경우에 비교 연산을 수행하기 전에 타입을 일치 시킨다.
 - 예외로 부동 소수점 방식을 사용하는 실수 타입은 0.1을 정확하게 표현할 수 없을뿐 아니라 float타입과 double 타입의 정밀도 차이도 있기 때문이다. 피연산자를 float 타입으로 강제 타입 변환 후에 비교 연산을 하면 해결된다.
 
@@ -107,4 +109,4 @@ boolean result = Double.isNan(변수);
 - 논리 연산자는 논리곱, 논리합,배타적 논리합, 논리 부정 연산을 수행한다.
 - 흐름제어문인 조건문, 반복문에서 실행 흐름을 제어할 때 주로 사용된다.
 
-<img src="img.png" style="max-width:600px; height:'auto'">
+<img src="img.png" alt="논리 연산자" style="max-width:400px; height:auto"/>
