@@ -326,3 +326,288 @@ Map<DishType, List<String>> dishNamesByType = menu.stream()
     
     // dishNamesByType = {MEAT=[salty, greasy, roasted, fried, crisp], OTHER=[salty, greasy, natural, light, tasty, fresh, fried], FISH=[roasted, tasty, fresh, delicious]}
     ```
+
+## 다수준 그룹화
+
+- 두 인수를 받는 팩토리 메서드 Collectors.groupingBy를 이용해 항목을 다수준으로 그룹화 가능하다.
+
+```java
+Map<DishType, Map<CaloricLevel, List<Dish>>> dishesByTypeCaloricLevel = menu.stream()
+    .collect(
+        groupingBy(Dish::getType,
+            groupingBy(MultiLevelGroupingBy::getCaloricLevel)
+        )
+    );
+
+private CaloricLevel getCaloricLevel(Dish dish) {
+  if (dish.getCalories() <= 400) return CaloricLevel.DIET;
+  else if (dish.getCalories() <= 700) return CaloricLevel.NORMAL;
+  else return CaloricLevel.FAT;
+}
+
+key = FISH
+value = {DIET=[Dish(name=prawns, vegetarian=false, calories=300, type=FISH)], NORMAL=[Dish(name=salmon, vegetarian=false, calories=450, type=FISH)]}
+```
+
+- 바깥쪽 groupingBy 메서드에 스트림의 항목을 분류할 두 번째 기준을 정의하는 내부 groupingBy를 전달해 두 수준으로 스트림 항목 그룹화 가능하다.
+- 다수준 그룹화 연산은 다양한 수준으로 확장할 수 있으며, n수준 그룹화의 결과는 n수준 트리 구조로 표현되는 n수준 맵이 된다.
+
+![Untitled](./img/Untitled 4.png)
+
+## 서브그룹으로 데이터 수집
+
+- 첫 번째 groupingBy로 넘겨주는 컬렉터의 형식은 제한이 없다.
+- 분류 함수 한 개의 인수를 같는 groupingBy( f )는 (f, ToList())의 축약형이다.
+
+```java
+Map<DishType, Long> typesCount = menu.stream()
+        .collect(groupingBy(Dish::getType, counting()));
+
+{FISH=2, MEAT=3, OTHER=4}
+
+Map<DishType, Optional<Dish>> mostCaloricByType = menu.stream()
+        .collect(groupingBy(Dish::getType, maxBy(comparingInt(Dish::getCalories))));
+
+{
+	FISH=Optional[Dish(name=salmon, vegetarian=false, calories=450, type=FISH)],
+	MEAT=Optional[Dish(name=pork, vegetarian=false, calories=800, type=MEAT)],
+	OTHER=Optional[Dish(name=pizza, vegetarian=true, calories=550, type=OTHER)]
+}
+```
+
+### 컬렉터 결과를 다른 형식에 적용하기
+
+### collectingAndThen
+
+- collectingAndThen()은 '수집 후 변환' 이라는 개념을 나타냅니다. 먼저 원하는 방식으로 데이터를 수집한 다음, 수집된 결과를 원하는 형태로 추가 변환합니다
+- 인수
+  1. 첫 번째 인수는 원래의 Collector로, 스트림에서 수집 작업을 수행합니다.
+  2. 두 번째 인수는 변환 함수로, 첫 번째 Collector가 수집한 결과에 적용됩니다.
+
+```java
+Map<DishType, Dish> mostCaloricByType_CollectingAndThen = menu.stream()
+        .collect(
+            groupingBy(
+                Dish::getType,
+                collectingAndThen(
+                    maxBy(comparingInt(Dish::getCalories)),
+                    Optional::get
+                )
+            )
+        );
+
+{
+	FISH=Dish(name=salmon, vegetarian=false, calories=450, type=FISH),
+	MEAT=Dish(name=pork, vegetarian=false, calories=800, type=MEAT),
+	OTHER=Dish(name=pizza, vegetarian=true, calories=550, type=OTHER)
+}
+```
+
+![Untitled](./img/Untitled 5.png)
+
+1. 컬렉터는 점선으로 표시, groupingBy는 가장 바깥쪽에 위치하면서 요리의 종류에 따라 메뉴 스트림을 세 개의 서브 스트림으로 그룹화
+2. groupingBy 컬렉터는 collectingAndTehn 컬렉터를 감싸 두 번째 컬렉터는 그룹화된 세 개의 서브스트림에 적용된다.
+3. collectingAndTehn 컬렉터는 세 번째 컬렉터 maxBy를 감싼다.
+4. 리듀싱 컬렉터가 서브스트림에 연산을 수행한 결과에 collectingAndTehn 의 Optional::get 변환 함수가 적용된다.
+5. groupingBy 컬렉터가 반환하는 맵의 분류 키에 대응하는 세 값이 각각의 요리 형식에서 가장 높은 칼로리다.
+
+### groupingBy와 함께 사용하는 다른 컬렉터 예제
+
+```java
+Map<DishType, Integer> totalCaloriesByType = menu.stream()
+        .collect(
+            groupingBy(
+                Dish::getType,
+                summingInt(Dish::getCalories)
+            )
+        );
+
+  System.out.println("totalCaloriesByType = " + totalCaloriesByType);
+
+//각 요리 형식에 존재하는 CaloricLevel을 찾는다.
+//mapping
+Map<DishType, Set<CaloricLevel>> caloricLevelsByType = menu.stream()
+    .collect(
+        groupingBy(
+            Dish::getType,
+            mapping(
+                CaloricLevel::getCaloricLevel,
+                toSet()
+            )
+        )
+    );
+
+//toCollection
+Map<DishType, Set<CaloricLevel>> caloricLevelsByType_toCollection = menu.stream()
+    .collect(
+        groupingBy(
+            Dish::getType,
+            mapping(
+                CaloricLevel::getCaloricLevel,
+                toCollection(HashSet::new)
+            )
+        )
+    );
+```
+
+# 분할
+
+- 분할은 **분할 함수**라 불리는 프레디케이트를 분류 함수로 사용하는 특수한 그룹화 기능이다.
+- 분할 함수는 불리언을 반환하므로 맵의 키 형식은 Boolean이다. 결과적으로 그룹화 맵은 최대 (true/false) 두 개의 그룹으로 분류된다.
+
+### **partitioningBy**
+
+- partitioningBy 메서드는 주어진 조건에 따라 스트림을 두 부분으로 분류하는 동시에, 각 파티션별로 추가적인 수집 작업을 수행할 수 있게 합니다. 이는 복잡한 수집 요구사항을 처리하는 데 유용합니다.
+
+```java
+//모든 요리를 채식 요리와 아닌 요리로 구분
+    Map<Boolean, List<Dish>> partitionedMenu = menu.stream()
+      .collect(partitioningBy(Dish::isVegetarian));
+
+//참값의 키로 맵에서 모든 채식 요리를 가져옴
+List<Dish> vegetarianDishes = partitionedMenu.get(true);
+
+//메뉴 리스트로 생성한 스트림을 프레디케이트로 필터링한 다음에 별도의 리스트에 결과 수집
+List<Dish> vegetarianDishes_filter = menu.stream()
+    .filter(Dish::isVegetarian)
+    .collect(toList());
+```
+
+- Collectors.partitioningBy(Predicate<? super T> predicate): 이 함수는 하나의 매개변수를 받습니다. 이 매개변수는 Predicate 함수형 인터페이스로, 스트림의 각 요소에 적용되는 조건을 지정합니다. 결과적으로 맵은 true와 false 키에 해당하는 요소들의 리스트를 담고 있게 됩니다.
+
+## 분할의 장점
+
+- 분할 함수가 반환하는 참, 거짓 두 요소의 스트림 리스트를 모두 유지한다는 것
+
+```java
+//오버로드된 partitioningBy
+Map<Boolean, Map<DishType, List<Dish>>> vegetarianDishesByType = menu.stream()
+    .collect(
+        partitioningBy(Dish::isVegetarian, // 분할 함수
+            groupingBy(Dish::getType) // 두 번째 컬렉터
+        )
+    );
+
+{
+  false={
+    FISH=[
+      Dish(name=prawns, vegetarian=false, calories=300, type=FISH),
+      Dish(name=salmon, vegetarian=false, calories=450, type=FISH)
+    ],
+    MEAT=[
+      Dish(name=pork, vegetarian=false, calories=800, type=MEAT),
+      Dish(name=beef, vegetarian=false, calories=700, type=MEAT),
+      Dish(name=chicken, vegetarian=false, calories=400, type=MEAT)
+    ]
+  },
+  true={
+    OTHER=[
+      Dish(name=french fries, vegetarian=true, calories=530, type=OTHER),
+      Dish(name=rice, vegetarian=true, calories=350, type=OTHER),
+      Dish(name=season fruit, vegetarian=true, calories=120, type=OTHER),
+      Dish(name=pizza, vegetarian=true, calories=550, type=OTHER)
+    ]
+  }
+}
+
+//채식 요리와 채식이 아닌 요리의 가각 그룹에서 가장 칼로리가 높은 요리
+Map<Boolean, Dish> mostCaloricPartitionedByVegetarian = menu.stream()
+    .collect(
+        partitioningBy(Dish::isVegetarian,
+                collectingAndThen(
+                    maxBy(comparingInt(Dish::getCalories)),
+                    Optional -> Optional.get()
+                )
+            )
+    );
+```
+
+- 오버로드된 Collectors.partitioningBy(Predicate<? super T> predicate, Collector<? super T,A,D> downstream): 이 함수는 두 개의 매개변수를 받습니다. 첫 번째 매개변수는 위와 동일한 Predicate이며, 두 번째 매개변수는 또 다른 Collector입니다.
+- 세부 수집 과정을 더욱 잘 제어하려는 목적으로 제공되며, 보다 복잡한 분류 작업을 수행할 수 있게 해줍니다. downstream 매개변수(두 번째 매개변수)는 각 파티션내의 요소들에게 추가적인 수집 작업을 정의합니다.
+
+## 숫자를 소수와 비소수로 분할하기
+
+```java
+public boolean isPrime(int candidate) {
+  int candidateRoot = (int) Math.sqrt((double) candidate);
+  return IntStream.range(2, candidate).noneMatch(i -> candidate % i == 0);
+}
+  
+public Map<Boolean, List<Integer>> partitionPrimes(int n) {
+  return IntStream.rangeClosed(2, n).boxed().collect(
+      partitioningBy(candidate -> isPrime(candidate))
+  );
+}
+```
+
+- 소수의 대상을 주어진 수의 제곱근 이하의 수로 제한
+- 주어진 수가 소수인지 아닌지 판단
+- n개의 숫자를 포함하는 스트림 구현
+- isPrime 메서드를 프레디케이드로 이용해 partitioningBy 컬렉터로 리듀스
+
+### Collectors 클래스의 정적 팩토리 메서드
+
+![Untitled](./img/Untitled 6.png)
+
+# Collector 인터페이스
+
+- collector 인터페이스는 리듀싱 연산(컬렉터)을 어떻게 구현할지 제공하는 메서드 집합으로 구성된다.
+
+```java
+public interface Collector<T, A, R> {
+    Supplier<A> supplier();
+    BiConsumer<A, T> accumulator();
+    BinaryOperator<A> combiner();
+    Function<A, R> finisher();
+    Set<Characteristics> characteristics();
+}
+```
+
+- 인수
+  1. T : 수집될 스트림 항목의 제네릭 형식
+  2. A : 누적자, 수집 과정에서 중간 결과를 누적하는 객체의 형식
+  3. R : 수집 연산 결과 객체의 형식(대개 컬렉션)
+
+## Collector 인터페이스의 메서드
+
+### Supplier 메서드 : 새로운 결과 컨테이너 만들기
+
+- supplier 메서드는 빈 결과로 이루어진 Supplier를 반환해야 한다.
+- supplier는 수집 과정에서 빈 누적자 인스턴스를 만드는 파라미터가 없는 함수이다.
+- ToListCollector처럼 누적자를 반환하는 컬렉터에서는 빈 누적자가 비어있는 스트림의 수집 과정의 결과가 될 수 없다.
+
+```java
+public Supplier<List<T>> supplier() {
+	return () -> new ArrayList<T>();
+}
+
+//생성자 참조 전달
+public Supplier<List<T>> supplier() {
+	return ArrayList::new;
+}
+```
+
+### accumualator 메서드 : 결과 컨테이너에 요소 추가하기
+
+- accumualator 메서드는 리듀싱 연산을 수행하는 함수를 반환한다.
+- 스트림에서 n번째 요소를 탐색할 때 누적자와 n번째 요소를 함수에 적용
+- 요소를 탐색하면서 적용하는 함수에 의해 누적자 내부상태가 바뀌므로 누적자가 어떤 값일지 단정할 수 없다.
+- ToListCollector에서 accumualator가 반환하는 함수는 이미 탐색한 항목을 포함하는 리스트에 현재 항목을 추가하는 연산을 수행한다.
+
+```java
+public BiConsumer<List<T>, T> accumualator() {
+	return (list, item) -> list.add(item);
+}
+
+//메서드 참조
+public Biconsumer<List<T>, T> accumualator() {
+	return List::add
+}
+```
+
+### finisher 메서드 : 최종 변환값을 결과 컨테이너로 적용하기
+
+- finisher 메서드는 스트림 탐색을 끝내고 누적자 객체를 최종 결과로 변환하면서 누적 과정을 끝낼 때 호출할 함수를 변환해야 한다.
+-
+
+### combiner 메서드 : 두 결과 컨테이너 병합
