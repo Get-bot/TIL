@@ -86,7 +86,7 @@ Double totalCaloriesDouble = menu.stream().collect(summingDouble(Dish::getCalori
 
 - summingInt 컬렉터의 누적 과정
 
-    ![Untitled(./img/Untitled.png)
+    ![Untitled](./img/Untitled.png)
 
     - 매핑된 각 요소의 값을 탐색하며 초깃값으로 설정되어 있는 누적자에 칼로리를 더한다.
 - summingLong, summingDouble 메서드도 같은 방식으로 동작하며 각각 형식의 데이터로 요약한다는 차이만 있다.
@@ -191,7 +191,7 @@ int totalCalories = menu.stream()
 
 - 리듀싱 과정
     
-    ![Untitled(./img/Untitled1.png)
+    ![Untitled](./img/Untitled1.png)
 
     1. 누적자를 초깃값으로 초기화
     2. 합계 함수를 이용해 각 요소에 변환 함수를 적용한 결과를 반복적으로 조합.
@@ -242,7 +242,7 @@ Map<CaloricLevel, List<Dish>> dishesByCaloricLevel = menu.stream()
 - 함수를 기준으로 스트림이 그룹화되므로 **분류 함수**라고 부른다
 - 그룹화로 스트림 분류 과정
 
-    ![Untitled(./img/Untitled2.png)
+    ![Untitled](./img/Untitled2.png)
     
     - 그룹화 연산의 결과로 그룹화 함수가 반환하는 키 그리고 키에 대응하는 스트림의 모든 항목 리스트를 갖는 맵이 반환된다.
 - 단순한 속성 접근자 대신 더 복잡한 분류 기준이 필요하면 메서드 참조를 분류 함수로 사용 불가능하기 때문에 함다 표현식으로 필요한 로직을 구현할 수 있다.
@@ -352,7 +352,7 @@ value = {DIET=[Dish(name=prawns, vegetarian=false, calories=300, type=FISH)], NO
 - 바깥쪽 groupingBy 메서드에 스트림의 항목을 분류할 두 번째 기준을 정의하는 내부 groupingBy를 전달해 두 수준으로 스트림 항목 그룹화 가능하다.
 - 다수준 그룹화 연산은 다양한 수준으로 확장할 수 있으며, n수준 그룹화의 결과는 n수준 트리 구조로 표현되는 n수준 맵이 된다.
 
-![Untitled(./img/Untitled4.png)
+![Untitled](./img/Untitled4.png)
 
 ## 서브그룹으로 데이터 수집
 
@@ -403,7 +403,7 @@ Map<DishType, Dish> mostCaloricByType_CollectingAndThen = menu.stream()
 }
 ```
 
-![Untitled(./img/Untitled5.png)
+![Untitled](./img/Untitled5.png)
 
 1. 컬렉터는 점선으로 표시, groupingBy는 가장 바깥쪽에 위치하면서 요리의 종류에 따라 메뉴 스트림을 세 개의 서브 스트림으로 그룹화
 2. groupingBy 컬렉터는 collectingAndTehn 컬렉터를 감싸 두 번째 컬렉터는 그룹화된 세 개의 서브스트림에 적용된다.
@@ -547,7 +547,7 @@ public Map<Boolean, List<Integer>> partitionPrimes(int n) {
 
 ### Collectors 클래스의 정적 팩토리 메서드
 
-![Untitled(./img/Untitled6.png)
+![Untitled](./img/Untitled6.png)
 
 # Collector 인터페이스
 
