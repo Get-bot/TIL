@@ -1,4 +1,5 @@
-# 스트림으로 데이터 수집
+# 6. 스트림으로 데이터 수집
+
 # 컬렉터란 무엇인가?
 
 ```java
@@ -30,16 +31,16 @@ Map<Currency, List<Transaction>> transactionsByCurrencies = transactions.stream(
 - 스트림에 collect를 호출하면 내부적으로 **리듀싱 연산**이 일어난다.
 - Collector인터페스의 메서드를 어떻게 구현하느냐에 따라 스트림에 어떤 리듀싱이 연산을 수행할지 결정된다.
 - 보통 함수 요소로 변환 할 때는 컬렉터를 적용하며 최종 결과를 저장하는 자료구조에 값을 누적한다
-    
-    스트림의 각 요소 → 변환함수 → 요소 추출 → 최종 결과 저장 자료구조 값 누적 
-    
+
+  스트림의 각 요소 → 변환함수 → 요소 추출 → 최종 결과 저장 자료구조 값 누적
+
 
 ## 미리 정의된 컬렉터
 
 - Collectors에서 제공하는 메서드의 기능 구분
-    1. 스트림 요소를 하나의 값으로 리듀스하고 요약
-    2. 요소 그룹화
-    3. 요소 분할
+  1. 스트림 요소를 하나의 값으로 리듀스하고 요약
+  2. 요소 그룹화
+  3. 요소 분할
 
 # 리듀싱과 요약
 
@@ -86,9 +87,9 @@ Double totalCaloriesDouble = menu.stream().collect(summingDouble(Dish::getCalori
 
 - summingInt 컬렉터의 누적 과정
 
-    ![Untitled](./img/Untitled.png)
+  ![Untitled](./img/Untitled.png)
 
-    - 매핑된 각 요소의 값을 탐색하며 초깃값으로 설정되어 있는 누적자에 칼로리를 더한다.
+  - 매핑된 각 요소의 값을 탐색하며 초깃값으로 설정되어 있는 누적자에 칼로리를 더한다.
 - summingLong, summingDouble 메서드도 같은 방식으로 동작하며 각각 형식의 데이터로 요약한다는 차이만 있다.
 
 ### averagingInt
@@ -134,7 +135,7 @@ String shortMenu = menu.stream()
         .map(Dish::getName)
       .collect(joining());
 
-~~~~// 구분 문자열
+// 구분 문자열
 String shortMenuSeparator = menu.stream()
     .map(Dish::getName)
     .collect(joining(", "));
@@ -159,7 +160,7 @@ Optional<Dish> mostCaloriesDish = menu.stream()
 ```
 
 - reducing의 인수
-    
+
     ```java
     public static <T, U> java.util.stream.Collector<T, ?, U> reducing(
     	U identity,
@@ -167,18 +168,18 @@ Optional<Dish> mostCaloriesDish = menu.stream()
     	@NotNull  java.util.function.BinaryOperator<U> op
     );
     ```
-    
-    1. identity - 리듀스를 위한 식별 값(또한 입력 요소가 없을 때 반환되는 값)
-    2. mapper - 각 입력 값에 적용할 매핑 함수
-    3. op - 매핑된 값을 리듀스 시키는 데 사용되는 BinaryOperator<U>
+
+  1. identity - 리듀스를 위한 식별 값(또한 입력 요소가 없을 때 반환되는 값)
+  2. mapper - 각 입력 값에 적용할 매핑 함수
+  3. op - 매핑된 값을 리듀스 시키는 데 사용되는 BinaryOperator<U>
 - 인수가 하나인 reducing
-    
+
     ```java
     public static <T> java.util.stream.Collector<T, ?, java.util.Optional<T>> reducing(     java.util.function.BinaryOperator<T> op );
     ```
-    
-    1. op - 입력 요소를 리듀스 할 때 사용되는 BinaryOperator<T>입니다.
-    - identity 를 첫 번째 인수로 받고 자신을 그대로 반환하는 **항등** **함수**를 두 번째 인수로 받는 상황에 해당한다. 즉, 시작값이 없으므로 Optional객체를 반환한다.
+
+  1. op - 입력 요소를 리듀스 할 때 사용되는 BinaryOperator<T>입니다.
+  - identity 를 첫 번째 인수로 받고 자신을 그대로 반환하는 **항등** **함수**를 두 번째 인수로 받는 상황에 해당한다. 즉, 시작값이 없으므로 Optional객체를 반환한다.
 
 ### 컬렉션 프레임워크 유연성 : 같은 연산도 다양한 방식으로 수행할 수 있다.
 
@@ -190,11 +191,11 @@ int totalCalories = menu.stream()
 ```
 
 - 리듀싱 과정
-    
-    ![Untitled](./img/Untitled1.png)
 
-    1. 누적자를 초깃값으로 초기화
-    2. 합계 함수를 이용해 각 요소에 변환 함수를 적용한 결과를 반복적으로 조합.
+  ![Untitled](./img/Untitled%201.png)
+
+  1. 누적자를 초깃값으로 초기화
+  2. 합계 함수를 이용해 각 요소에 변환 함수를 적용한 결과를 반복적으로 조합.
 - 스트림을 IntStream으로 매핑한 다음에 sum 메서드 호출
 
 ```java
@@ -242,9 +243,9 @@ Map<CaloricLevel, List<Dish>> dishesByCaloricLevel = menu.stream()
 - 함수를 기준으로 스트림이 그룹화되므로 **분류 함수**라고 부른다
 - 그룹화로 스트림 분류 과정
 
-    ![Untitled](./img/Untitled2.png)
-    
-    - 그룹화 연산의 결과로 그룹화 함수가 반환하는 키 그리고 키에 대응하는 스트림의 모든 항목 리스트를 갖는 맵이 반환된다.
+  ![Untitled](./img/Untitled%202.png)
+
+  - 그룹화 연산의 결과로 그룹화 함수가 반환하는 키 그리고 키에 대응하는 스트림의 모든 항목 리스트를 갖는 맵이 반환된다.
 - 단순한 속성 접근자 대신 더 복잡한 분류 기준이 필요하면 메서드 참조를 분류 함수로 사용 불가능하기 때문에 함다 표현식으로 필요한 로직을 구현할 수 있다.
 
 ## 그룹화된 요소 조작
@@ -267,8 +268,8 @@ Map<DishType, List<Dish>> caloricDishesByType = menu.stream()
 
 - filtering() 은 스트림의 각 요소를 필터링하여 원하는 조건에 부합하는 요소들만 특정 방식으로 수집할 수 있다.
 - 인수
-    1. 첫번째 매개변수는 프레디케이트로, 스트림의 각 요소에 적용된다.
-    2. 두번째 매개변수는 다른 Collector로, 프레디케이트가 참인 결과 요소들만 수집한다.
+  1. 첫번째 매개변수는 프레디케이트로, 스트림의 각 요소에 적용된다.
+  2. 두번째 매개변수는 다른 Collector로, 프레디케이트가 참인 결과 요소들만 수집한다.
 
 ```java
 Map<DishType, List<Dish>> caloricDishesByType = menu.stream()
@@ -286,8 +287,8 @@ Map<DishType, List<Dish>> caloricDishesByType = menu.stream()
 
 - mapping()은 입력 스트림의 각 요소를 원하는 형태로 변환(매핑)하고, 그 변환된 요소들을 원하는 방식으로 수집할 수 있도록 한다.
 - 인수
-    1. 첫 번째 매개변수는 매핑 함수로, 스트림의 각 요소에 적용된다.
-    2. 두 번째 매개변수는 다른 Collector로, 매핑 함수가 반환한 결과를 수집한다.
+  1. 첫 번째 매개변수는 매핑 함수로, 스트림의 각 요소에 적용된다.
+  2. 두 번째 매개변수는 다른 Collector로, 매핑 함수가 반환한 결과를 수집한다.
 
 ```java
 Map<DishType, List<String>> dishNamesByType = menu.stream()
@@ -298,9 +299,9 @@ Map<DishType, List<String>> dishNamesByType = menu.stream()
 
 - flatMapping()은 '매핑'과 '평면화'라는 두 가지 스트림 연산을 결합하는 메서드입니다. 그 결과로, 스트림의 각 요소를 여러 개의 결과로 '분해'하고, 이들을 하나의 '평탄화된' 스트림으로 만듭니다.
 - 인수
-    1. 첫 번째 매개변수는 함수로, 스트림의 각 요소에 적용됩니다. 이 함수는 스트림의 각 요소를 스트림으로 변환합니다. 즉, 각 요소를 여러 요소로 분해합니다. 이 때 이 '분해'는 조건에 따라 비어있는 스트림일 수 있습니다.
-    2. 두 번째 매개변수는 컬렉터로, 변환 및 평면화된 요소들을 수집하는 데 사용됩니다.
-    
+  1. 첫 번째 매개변수는 함수로, 스트림의 각 요소에 적용됩니다. 이 함수는 스트림의 각 요소를 스트림으로 변환합니다. 즉, 각 요소를 여러 요소로 분해합니다. 이 때 이 '분해'는 조건에 따라 비어있는 스트림일 수 있습니다.
+  2. 두 번째 매개변수는 컬렉터로, 변환 및 평면화된 요소들을 수집하는 데 사용됩니다.
+
     ```java
     return Map.of(
             "pork", List.of("greasy", "salty"),
@@ -327,6 +328,7 @@ Map<DishType, List<String>> dishNamesByType = menu.stream()
     // dishNamesByType = {MEAT=[salty, greasy, roasted, fried, crisp], OTHER=[salty, greasy, natural, light, tasty, fresh, fried], FISH=[roasted, tasty, fresh, delicious]}
     ```
 
+
 ## 다수준 그룹화
 
 - 두 인수를 받는 팩토리 메서드 Collectors.groupingBy를 이용해 항목을 다수준으로 그룹화 가능하다.
@@ -352,7 +354,7 @@ value = {DIET=[Dish(name=prawns, vegetarian=false, calories=300, type=FISH)], NO
 - 바깥쪽 groupingBy 메서드에 스트림의 항목을 분류할 두 번째 기준을 정의하는 내부 groupingBy를 전달해 두 수준으로 스트림 항목 그룹화 가능하다.
 - 다수준 그룹화 연산은 다양한 수준으로 확장할 수 있으며, n수준 그룹화의 결과는 n수준 트리 구조로 표현되는 n수준 맵이 된다.
 
-![Untitled](./img/Untitled4.png)
+![Untitled](./img/Untitled%203.png)
 
 ## 서브그룹으로 데이터 수집
 
@@ -403,7 +405,7 @@ Map<DishType, Dish> mostCaloricByType_CollectingAndThen = menu.stream()
 }
 ```
 
-![Untitled](./img/Untitled5.png)
+![Untitled](./img/Untitled%204.png)
 
 1. 컬렉터는 점선으로 표시, groupingBy는 가장 바깥쪽에 위치하면서 요리의 종류에 따라 메뉴 스트림을 세 개의 서브 스트림으로 그룹화
 2. groupingBy 컬렉터는 collectingAndTehn 컬렉터를 감싸 두 번째 컬렉터는 그룹화된 세 개의 서브스트림에 적용된다.
@@ -547,7 +549,7 @@ public Map<Boolean, List<Integer>> partitionPrimes(int n) {
 
 ### Collectors 클래스의 정적 팩토리 메서드
 
-![Untitled](./img/Untitled6.png)
+![Untitled](./img/Untitled%205.png)
 
 # Collector 인터페이스
 
@@ -569,6 +571,11 @@ public interface Collector<T, A, R> {
   3. R : 수집 연산 결과 객체의 형식(대개 컬렉션)
 
 ## Collector 인터페이스의 메서드
+
+```java
+//Stream<T>의 모든 요소를 List<T> 로 수집
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>>
+```
 
 ### Supplier 메서드 : 새로운 결과 컨테이너 만들기
 
@@ -608,6 +615,257 @@ public Biconsumer<List<T>, T> accumualator() {
 ### finisher 메서드 : 최종 변환값을 결과 컨테이너로 적용하기
 
 - finisher 메서드는 스트림 탐색을 끝내고 누적자 객체를 최종 결과로 변환하면서 누적 과정을 끝낼 때 호출할 함수를 변환해야 한다.
--
+- 때로는 ToListCollector에서 볼 수 있는 것처럼 누적자 객체가 이미 최종 결과인 상황도 있다. 이런 떄는 변환 과정이 필요하지 않으므로 finisher 메서드는 항등 함수를 반환한다.
+
+```java
+public Function<List<T>, List<T>> finisher() {
+	return Function.identity();
+}
+```
+
+### 순차 리듀싱 과정의 논리적 순서
+
+![Untitled](./img/Untitled%206.png)
 
 ### combiner 메서드 : 두 결과 컨테이너 병합
+
+- combiner는 리듀싱 연산에서 사용할 함수를 반환한다.
+- 스트림의 서로 다른 서브파트를 병렬로 처리할 때 누적자가 이 결과를 어떻게 처리할지 정의한다.
+- toList()의 combiner는 스트림의 두 번째 서브파트에서 수집한 항목 리스트를 첫 번째 서브파트 결과 리스트의 뒤에 추가하면 된다.
+
+```java
+public BinaryOperator<List<T>> combiner() {
+	return(list1, list2) -> {
+		list1.addAll(list2);
+		return list1;	
+	}
+}
+```
+
+- 병렬화 리듀싱 과정에서 combiner 메서드 활용
+
+![Untitled](./img/Untitled%207.png)
+
+- 스트림을 분할해야 하는지 정의하는 조건이 거짓으로 바뀌기 전까지 원래 스트림을 재귀적으로 분할한다.
+  - 보통 분산된 작업의 크기가 너무 작아지면 병렬 수행 속도는 순차 수행의 속도보다 느려진다. 즉 병렬 수행의 효과가 상쇄된다. 일반적으로 프로세싱 코어의 개수를 초과하는 병렬 작업은 효율적이지 않다.
+- 모든 서브스트림의 각 요소에 리듀싱 연산을 순차적으로 적용해서 서브스트림을 병렬로 처리할 수 있다.
+- 컬렉터의 combiner메서드가 반환하는 함수로 모든 부분결과를 쌍으로 합친다. 즉 분할된 모든 서브스트림의 결과를 합치면서 연산이 완료된다.
+
+### characteristics 메서드
+
+- characteristics메서드는 컬렉터의 연산을 정의하는 Characteristics 형식의 불변 집합을 반환한다.
+- 스트림을 병렬로 리듀스할 것인지 그리고 병렬로 리듀스한다면 어떤 최적화를 선택해야 할지 힌트를 제공한다.
+- Characteristics는 세 항목을 포함하는 열거형이다.
+  - UNORDERED : 리듀싱 결과는 스트림 요소의 방문 순서나 누적 순서에 영향을 받지 않는다.
+  - CONCURRENT : 다중 스레드에서 accumulator 함수를 호출할 수 있으며 이 컬렉터는 스트림의 병렬 리듀싱을 수행할 수 있다. 컬렉터의 플래그게 UNORDERED를 함께 설정하지 않았다면 데이터 소스가 정렬되어 있지 않은 상황(집합처럼 요소의 순서가 무의미한 상황)에서만 병렬 리듀싱을 수행할 수 있다.
+  - IDENTITY_FINISH : finisher 메서드가 반환하는 함수는 단순히 identity를 적용할 뿐이므로 이를 생략할 수 있다. 따라서 리듀싱 과정의 최종 결과로 누적자 객체를 바로 사용할 수 있다. 또한 누적자 A를 결과 R로 안전하게 형변환할 수 있다.
+- ToListCollector에서 스트림의 요소를 누적하는데 사용한 리스트가 최종 결과 형식이므로 추가 변환이 필요 없다. 따라서 ToListCollector는 IDENTITY_FINISH다. 하지만 리스트의 순서는 상관이 없으므로 UNORDERED다. 마지막으로 ToListCollector는 CONCURRENT다. 하지만 요소의 순서가 무의미한 데이터 소스여야 병렬로 실행할 수 있다.
+
+## 응용하기
+
+### 커스텀 ToListCollector 구현
+
+```java
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+
+    @Override
+    public Supplier<List<T>> supplier() {
+        return ArrayList::new; // 수집 연산의 시발점
+    }
+
+    @Override
+    public BiConsumer<List<T>, T> accumulator() {
+        return List::add; // 탐색한 항목을 누적하고 바로 누적자를 고친다.
+    }
+
+    @Override
+    public BinaryOperator<List<T>> combiner() {
+        return (list1, list2) -> { // 두 번째 인수인 누적자를 첫 번째 누적자에 적용한다.
+            list1.addAll(list2); // 변경된 첫 번째 누적자를 반환한다.
+            return list1;
+        };
+    }
+
+    @Override
+    public Function<List<T>, List<T>> finisher() {
+        return Function.identity(); // 항등 함수
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+        return Collections.unmodifiableSet(
+            EnumSet.of(Characteristics.IDENTITY_FINISH, Characteristics.CONCURRENT)
+        ); // 컬렉터의 플래그를 IDENTITY_FINISH와 CONCURRENT로 설정한다.
+    }
+}
+
+//커스텀 collector 적용
+List<Dish> dishes = menuStream.collect(new ToListCollector<Dish>());
+
+//기존 코드
+List<Dish> dishes = menuStream.collect(toList());
+
+```
+
+- 기존 코드의 toList는 팩토리지만 ToListCollector는 new로 인스턴스화 한다는 점이 다르다.
+
+### 컬렉터 구현을 만들지 않고 커스텀 수집 수행
+
+- IDENTITY_FINISH 수집 연산에서는 Collector 인터페이스를 완전히 새로 구현하지 않고도 같은 결과를 얻을 수 있다.
+- Stream은 세 함수(발행, 누적, 합침)를 인수로 받는 collect 메서드를 오버로드하며 각각의 메서드는 Collector 인터페이스의 메서드가 반환하는 함수와 같은 기능을 수행한다.
+
+```java
+List<Dish> dishes = menuStream.collect(
+	ArrayList::new, // 발행
+	List::add, //누적
+	List::addAll // 합침
+);
+```
+
+- 컬렉터를 구현한 코드에 비해 좀 더 간결하고 축약되어 보이나 가독성은 떨어진다.
+- 적절한 클래스로 커스텀 컬렉터를 구현하는 편이 중복을 피하고 재사용성을 높이는데 도움이 된다.
+- 이 메서드로는 Characteristics를 전달할 수 없다. 즉, IDENTITY_FINISH와 CONCURRENT 지만 UNORDERED 는 아닌 컬렉터로만 동작한다.
+
+# 커스텀 컬렉터를 구현해서 성능 개선하기
+
+```java
+public boolean isPrime(int candidate) {
+  int candidateRoot = (int) Math.sqrt((double) candidate);
+  return IntStream.range(2, candidate).noneMatch(i -> candidate % i == 0);
+}
+```
+
+### 소수로만 나누기
+
+- 소수로 나누어떨어지는지 확인해서 대상의 범위를 좁힐 수 있다.
+- 제수가 소수가 아니면 소용이 없으므로 제수를 현재 숫자 이하에서 발견한 소수로 제한할 수 있따.
+- 주어진 숫자가 소수인지 아닌지 판단 하기위해 소수 리스트에 접근해야 하나 기존 컬렉터로는 수집 과정에서 부분결과에 접근이 불가능하다.
+- 커스텀 컬렉터 클래스로 문제를 해결한다.
+
+```java
+//중간 결과 리스트가 있다면 isPrime 메서드로 중간 결과 리스트를 전달하도록 코드 구현
+public boolean isPrime(List<Integer> primes, int candidate) {
+  return primes.stream().noneMatch(i -> candidate % i == 0)
+}
+
+//숫자의 제곱근보다 작은 소수만 사용하도록 코드 최적화 즉, 다음 소수가 대상의 루트보다 크면 소수로 나누는 검사 중지
+//대상의 제곱보다 큰 소수를 찾으면 검사를 중단하도록 구현
+public boolean isPrime(List<Integer> primes, int candidate) {
+	int candidateRoot = (int) Math.sqrt((double) candidate);
+  return primes.stream()
+	.takeWhile(i -> i <= candidateRoot)
+	.noneMatch(i -> candidate % i == 0)
+}
+```
+
+### 1단계 : Controller 클래스 시그니처 정의
+
+```java
+public class PrimeNumbersCollector implements
+	Collector<
+		Integer, // 스트림 요소 형식
+		Map<Boolean, List<Integer>>, // 누적자 형식
+		Map<Boolean, List<Integer>> // 수집 연산의 결과 형식
+	>
+```
+
+### 2단계: 리듀싱 연산 구현
+
+```java
+// 누적자를 만드는 함수 반환
+public Supplier<Map<Boolean, List<Integer>>> supplier() {
+    return () -> new HashMap<Boolean, List<Integer>> () {{
+        put(true, new ArrayList<Integer>());
+        put(false, new ArrayList<Integer>());
+    }};
+}
+
+public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
+	return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
+		acc.get(isPrime(acc.get(true), candidate)) // isPrime 결과에 따라 소수, 비소수 구분
+		.add(candidate); // candidate를 알맞은 리스트에 추가
+	};
+}
+```
+
+### 3단계 : 가능하다면 병렬 실행할 수 있는 컬렉터 만들기
+
+```java
+public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
+	return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
+		map1.get(true).addAll(map2.get(true));
+		map1.get(false).addAll(map2.get(false));
+		return map1;
+	};
+}
+```
+
+### 4단계 : finisher 메서드와 컬렉텅늬 characteristics 메서드
+
+```java
+public Function<Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> finisher() {
+  return Function.identity();
+}
+
+public Set<Characteristics> characteristics() {
+  return Collections.unmodifiableSet(EnumSet.of(Characteristics.IDENTITY_FINISH));
+}
+```
+
+### 최종 구현코드
+
+```java
+public class PrimeNumbersCollector implements Collector<Integer, Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> {
+    @Override
+    public Supplier<Map<Boolean, List<Integer>>> supplier() {
+        return () -> new HashMap<Boolean, List<Integer>> () {{ 
+            put(true, new ArrayList<Integer>());
+            put(false, new ArrayList<Integer>());
+        }};
+    }
+		//두 개의 빈 리스트를 포함하는 맵으로 수집 동작 시작.
+
+    @Override
+    public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
+        return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
+            acc.get(isPrime(acc.get(true), candidate)).add(candidate);
+        };
+    }
+
+    @Override
+    public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
+        return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
+            map1.get(true).addAll(map2.get(true));
+            map1.get(false).addAll(map2.get(false));
+            return map1;
+        };
+    }
+
+    @Override
+    public Function<Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> finisher() {
+        return Function.identity(); 
+				// 최종 수집 과정에서 데이터 변환이 필요하지 않으므로 항등 함수 반환
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+        return Collections.unmodifiableSet(EnumSet.of(Characteristics.IDENTITY_FINISH));
+    }
+		//발견한 소수의 순서에 의마가 있으므로 컬렉터는 IDENTITY_FINISH지만 UNOREDERED,CONCURRENT는 아니다.
+
+    public boolean isPrime(List<Integer> primes, int candidate) {
+        int candidateRoot = (int) Math.sqrt((double) candidate);
+        return primes.stream()
+                .takeWhile(i -> i <= candidateRoot)
+                .noneMatch(i -> candidate % i == 0);
+    }
+}
+```
+
+# 마무리
+
+- collect는 스트림의 요소를 요약 결과로 누적하는 다양한 방법(컬렉터)을 인수로 갖는 최종 연산이다.
+- 스트림의 요소를 하나의 값으로 리듀스하고 요약하는 컬렉터뿐 아니라 최댓값, 최솟값 평균값을 계산하는 컬렉터 등이 미리 정의되어 있다.
+- 미리 정의된 컬렉터인 groupingBy로 스트림의 요소를 그룹화하거나, partitioningBy로 스트림의 요소를 분할할 수 있다.
+- 컬렉터는 다수준의 그룹화, 분할, 리듀싱 연산에 적합하게 설계되어 있다.
+- Collector 인터페이스에 정의된 메서드를 구현해서 커스텀 컬렉터를 개발할 수 있다.
