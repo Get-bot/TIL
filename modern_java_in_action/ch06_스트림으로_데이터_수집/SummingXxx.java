@@ -20,5 +20,6 @@ public class SummingXxx {
     System.out.println(totalCalories);
     System.out.println(totalCaloriesLong);
     System.out.println(totalCaloriesDouble);
+
   }
 }
