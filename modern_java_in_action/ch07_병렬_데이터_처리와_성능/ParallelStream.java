@@ -3,7 +3,7 @@ package ch07_병렬_데이터_처리와_성능;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-public class parallelStream {
+public class ParallelStream {
   public static void main(String[] args) {
     long sequentialSum = sequentialSum(100);
     System.out.println("sequentialSum = " + sequentialSum);
