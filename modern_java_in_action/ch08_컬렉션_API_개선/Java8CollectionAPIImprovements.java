@@ -39,13 +39,13 @@ public class Java8CollectionAPIImprovements {
       }
     }
 
-    //내부적으로 for-each 루프는 Iterator 객체를 사용한다.
-//    for (Iterator<Transaction> iterator = transactions.iterator(); iterator.hasNext(); ) {
-//      Transaction transaction = iterator.next();
-//      if(Character.isDigit(transaction.getTrader().getName().charAt(0))){
-//        transaction.remove();
-//      }
-//    }
+//    내부적으로 for-each 루프는 Iterator 객체를 사용한다.
+    for (Iterator<Transaction> iterator = transactions.iterator(); iterator.hasNext(); ) {
+      Transaction transaction = iterator.next();
+      if(Character.isDigit(transaction.getTrader().getName().charAt(0))){
+        transactions.remove(transaction);
+      }
+    }
 
     //Iterator 객체를 명시적으로 사용하고 그 객체의 remove 메서드를 호출한다.
     for (Iterator<Transaction> iterator = transactions.iterator(); iterator.hasNext(); ) {
