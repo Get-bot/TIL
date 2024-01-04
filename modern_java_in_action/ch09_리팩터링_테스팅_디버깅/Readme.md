@@ -555,3 +555,4 @@ public static Product createProductLambda(String name) {
 ```
 
 - 람다로 다시 구현 했으나 팩토리 메서드 createProduct가 상품 생성자로 여러 인수를 전달하는 상황에서는 이 기법을 적용하기 어렵다. 단순한 Supplier 함수형 인터페이스로는 이 문제를 해결할 수 없다.
+
