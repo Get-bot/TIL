@@ -556,3 +556,204 @@ public static Product createProductLambda(String name) {
 
 - 람다로 다시 구현 했으나 팩토리 메서드 createProduct가 상품 생성자로 여러 인수를 전달하는 상황에서는 이 기법을 적용하기 어렵다. 단순한 Supplier 함수형 인터페이스로는 이 문제를 해결할 수 없다.
 
+# 람다 테스팅
+
+람다 표현식을 적용해 코드를 구현했다. 하지만 개발의 최종 목표는 제대로 작동하는 코드를 구현하는 것이지 깔끔한 코드를 구현하는 것이 아니다.
+
+프로그램이 의도대로 동작하는지 확인할 수 있는 단위 테스팅을 진행한다.
+
+```java
+public class Point {
+	private final int x;
+	private final int y;
+
+	private Point(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	public int getX() {return x};
+	public int getY() {return y};
+
+	public Point moveRightBy(int x) {
+		return new Point(this.x + x, y);	
+	}
+
+}
+
+@Test
+pulic void testMoveRightBy() throw Exception {
+	Point p1 = new point(5, 5);
+	Point p2 = p1.moveRightBy(10);
+	assertEqual(15, p2.getX());
+	assertEqual(5, p2.getY());
+}
+```
+
+## 보이는 람다 표현식의 동작 테스팅
+
+moveRightBy는 public이므로 위 코드는 문제없이 동작한다. 따라서 테스트 케이스 내부에서 Point 클래스 코드를 테스트할 수 있다. 하지만 람다는 익면(결국 익명 함수)이므로 테스트 코드 이름을 호출할 수 없다.
+
+따라서 필요하다면 람다를 필드에 저장해서 재사용할 수 있으며 람다의 로직을 테스트할 수 있다.
+
+- 메서드를 호출하는 것처럼 람다를 사용
+- Point클래스에 compareByXAndThenY라는 정적 필드를 추가했다고 가정(compareByXAndThenY 를 이용하면 메서드 참조로 생성한 Comparator 객체에 접근할 수 있다.)
+
+```java
+pulic class Point {
+	public final static Comparator<Point> compareByXAndThenY =
+		comparing(Point::getX).thenComparing(Point::getY);
+}
+```
+
+- 람다 표현식은 함수형 인터페이스의 인스턴스를 생성한다.
+- 따라서 생성된 인스턴스의 동작으로 람다 표현식을 테스트할 수 있다.
+
+```java
+@Test
+public void testComparingTwoPoints() throw Exception {
+	Point p1 = new point(5, 5);
+	Point p2 = p1.moveRightBy(10);
+	int result = Point.compareByXAndThenY.compare(p1, p2);
+	assertTrue(result < 0);
+}
+```
+
+## 람다를 사용하는 메서드의 동작에 집중하라
+
+람다의 목표는 정해진 동작을 다른 메서드에서 사용할 수 있도록 하나의 조각으로 캡슐화하는 것이다. 그러려면 세부 구현을 포함하는 람다 표현식을 공개하지 말아야 한다. 람다 표현식을 사용하는 메서드의 동작을 테스트함으로써 람다를 공개하지 않으면서도 람다 표현식을 검증할 수 있다.
+
+```java
+public static List<Point> moveAllPointsRightBt(List<Point> points, int x) {
+	return points.stream()
+		.map(p -> new Point(p.getX() + x, p.getY()))
+		.collect(toList());
+}
+```
+
+- 위 코드에 람다 표현식 p -> new Point(p.getX() + x, p.getY()); 를 테스트하는 부분은 없다.
+- 그냥 moveAllPointsRightBy 메서드를 구현한 코드일 뿐이다. 이제 moveAllPointsRightBy 메서드의 동작을 확인할 수 있다.
+
+```java
+@Test
+public void testMoveAllPointsRightBy() throw Exception {
+	List<Point> points = Array.asList(new Point(5, 5), new Point(10, 5));
+	List<Point> expectedPoints = Array.asList(new Point(15, 5), new Point(20, 5));
+	
+	List<Point> newPoints = Point.moveAllPointsRightBy(points, 10;
+	assertEquals(expectePoinsts, newPoints);
+}
+```
+
+## 복잡한 람다를 개별 메서드로 분리하기
+
+람다 표현식을 메서드 참조로 변경해 일반 메서드를 테스트하듯이 람다 표현식을 테스트할 수 있다.
+
+## 고차원 함수 테스팅
+
+함수를 인수로 받거나 다른 함수를 반환하는 메서드(고차원함수)는 좀 더 사용하기 어렵다. 메서드가 람다를 인수로 받는다면 다른 람다로 메서드의 동작을 테스트 할 수 있다.
+
+```java
+@Test
+public void testFilter() throw Exception {
+	List<Integer> numbers = Arrays.asList(1, 2, 3, 4);
+	List<Integer> even = filter(numbers, i -> i % 2 == 0);
+	List<Integer> smallerThanThree = filter(numbers, i -> i < 3);
+	assertEquals(Arrays.asList(2, 4), even);
+	assertEquals(Arrays.asList(1, 2), smallerThanThree);
+
+}
+```
+
+- 테스트해야 할 메서드가 다른 함수를 반환한다면 Comparator에서 살펴봤던 것처럼 함수형 인터페이스의 인스턴스로 간주하고 함수의 동작을 테스트할 수 있다.
+
+# 디버깅
+
+문제가 발생한 코드를 디버깅할 때 개발자는 두 가지를 가장 먼저 확인해야 한다.
+
+- 스택 트레이스
+- 로깅
+
+하지만 람다 표현식과 스트림은 기존의 디버깅 기법을 무력화한다.
+
+## 스택 트레이스 확인
+
+예외 발생으로 프로그램이 실행 중지되면 스택 프레임에서 정보를 얻을 수 있다.
+
+프로그램이 메서드를 호출할 때마다 프로그램에서의 호출 위치, 호출할 때의 인수값, 호출된 메서드의 지역 변수 등을 포함한 호출 정보가 생성되며 이들 정보는 스택 프레임에 저장된다.
+
+### 람다와 스택 트레이스
+
+람다 표현식은 이름이 없기 때문에 조금 복잡한 스택 트레이스가 생성된다.
+
+```java
+//고의적으로 문제를 일으킴
+public class Debugging{
+	public static void main(String[] args) {
+		List<Point> points = Arrays.asList(new Point(12,2), null);
+		points.stream().map(p -> p.getX()).forEach(System.out::println);
+	}
+}
+
+//실행
+Exception in thread "main" java.lang.NullPointerException: Cannot invoke "classes.Point.getX()" because "p" is null
+	at ch09_리팩터링_테스팅_디버깅.Debugging.lambda$main$0(Debugging.java:11)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Spliterators$ArraySpliterator.forEachRemaining(Spliterators.java:992)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:150)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:173)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at ch09_리팩터링_테스팅_디버깅.Debugging.main(Debugging.java:11)
+```
+
+- lambda$main$0 람다 표현식은 이름이 없으므로 컴파일러가 람다를 참조하는 이름을 만들어낸 것이다.
+- 메서드 참조를 사용해도 스택 트레이스에는 메서드명이 나타나지 않는다.
+- 메서드 참조를 사용하는 클래스와 같은 곳에 선언되어 있는 메서드를 참조할 때는 메서드 참조이름이 스택 트레이스에 나타난다.
+- 따라서 람다 표현식과 관련한 스택 트레이스는 이해하기 어려울 수 있다는 점을 염두해야 한다.
+
+## 정보 로깅
+
+스트림의 파이프라인 연산을 디버깅한다고 가정하자.
+
+```java
+List<Integer> numbers = Arrays.asList(2, 3, 4, 5);
+
+numbers.stream()
+	.map(x -> x + 17)
+	.filter(x -> x % 2 == 0)
+	.limit(3)
+	.forEach(System.out::println);
+```
+
+- forEach를 호출하는 순간 전체 스트림이 소비된다. 스트림 파이프라인에 적용된 각각의 연산(map, filter, limit)이 어떤 결과를 도출하는지 확인할 수 있다면 좋을 것 같다.
+- 바로 peek이라는 스트림 연산을 활용할 수 있다. peek은 스트림의 각 요소를 소비한 것처럼 도작을 실행한다. 하지만 forEach처럼 실제로 스트림의 요소를 소비하지는 않는다. peek은 자신이 확인한 요소의 파이브라인의 다은 연산으로 그대로 전달한다.
+- peek의 연산 동작모습
+
+![Untitled](./img/Untitled%203.png)
+
+```java
+List<Integer> result = numbers.stream()
+	.peek(x -> System.out.println("from stream: " + x))
+	.map (x -> x + 17)
+	.peek(x -> System.out.println("after map : " + x))
+	.filter(x -> x % 2 == 0)
+	.peek(x -> System.out.println("from filter: " + x))
+	.limit(3)
+	.peek(x -> System.out.println("from limit: " + x))
+	.collect(toList());
+```
+
+# 마무리
+
+- 람다 표현식으로 가독성이 좋고 더 유연한 코드를 만들 수 있다.
+- 익명 클래스는 람다 표현식으로 바꾸는 것이 좋다. 하지만 이때 this, 변수 섀도 등 미묘하게 의미상 다른 내용이 있음을 주의하자.
+- 메서드 참조로 람다 표현식보다 더 가독성이 좋은 코드를 구현할 수 있다.
+- 반복적으로 컬렉션을 처리하는 루틴은 스트림 API로 대체할 수 있을지 고려하는 것이 좋다.
+- 람다 표현식으로 전략, 템플릿 메서드, 옵저버, 의무 체인, 팩토리 등의 객체지향 디자인 패턴에서 발생하는 불필요한 코드를 제거할 수 있다.
+- 람다 표현식도 단위 테스트를 수행할 수 있다. 하지만 람다 표현식 자체를 테스트하는 것보다는 람다 표현식이 사용되는 메서드의 동작을 테스트하는 것이 바람직하다.
+- 복잡한 람다 표현식은 일반 메서드로 재구현할 수 있다.
+- 람다 표현식을 사용하면 스택 트레이스를 이해기 어려워진다.
+- 스트림 파이프라인에서 요소를 처리할 때 peek 메서드로 중간값을 확인할 수 있다.
